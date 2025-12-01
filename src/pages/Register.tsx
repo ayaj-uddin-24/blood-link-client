@@ -1,9 +1,15 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, User, Mail, Phone, Calendar, MapPin, Weight, Lock } from 'lucide-react';
 import { bloodGroups } from '@/data/mockData';
@@ -24,6 +30,7 @@ const Register = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,15 +55,54 @@ const Register = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Map frontend data to backend expectations
+      const submitData = {
+        fullName: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
+        bloodGroup: formData.bloodGroup,
+        weight: parseInt(formData.weight),
+        address: formData.address,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      };
+
+      const response = await fetch('http://localhost:3000/api/v1/donor/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Store token for auth (e.g., for future API calls)
+      localStorage.setItem('token', data.token);
+
       toast({
         title: "Registration Successful!",
         description: "Welcome to BloodLink! You can now help save lives.",
       });
+
+      // Redirect to home page (adjust path as needed)
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-      // In a real app, you would redirect to login or dashboard
-    }, 1500);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

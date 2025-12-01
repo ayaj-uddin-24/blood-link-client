@@ -26,7 +26,6 @@ const Login = () => {
         description: "Welcome back to BloodLink. Redirecting to your dashboard...",
       });
       setIsLoading(false);
-      // In a real app, you would redirect to dashboard or home
     }, 1000);
   };
 

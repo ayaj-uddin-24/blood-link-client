@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,78 +16,19 @@ import {
   Search,
   Filter,
   MapPin,
-  Clock,
-  Phone,
-  Mail,
   Hospital,
-  User,
   Calendar,
   Droplet,
   Share2,
   Bell,
   CheckCircle,
-  XCircle,
   Users,
   Zap,
-  Timer,
   MessageCircle,
   Eye,
-  TrendingUp,
-  Shield
+  Shield,
+  Loader2
 } from 'lucide-react';
-
-// Mock data for demonstration
-const mockBloodRequests = [
-  {
-    id: '1',
-    patientName: 'Rakib Hasan',
-    bloodGroup: 'O-',
-    urgency: 'critical',
-    hospitalName: 'Dhaka Medical College Hospital',
-    contactInfo: '+880 1711-223344',
-    location: 'Dhaka, Bangladesh',
-    requiredBy: '2024-09-27',
-    description: 'Emergency surgery required. Patient lost significant blood due to accident',
-    requestDate: '2024-09-26',
-    status: 'active',
-    responses: 12,
-    views: 45,
-    verified: true
-  },
-  {
-    id: '2',
-    patientName: 'Sumaiya Akter',
-    bloodGroup: 'A+',
-    urgency: 'high',
-    hospitalName: 'Bangabandhu Sheikh Mujib Medical University (BSMMU)',
-    contactInfo: 'sumaiya.akter@email.com',
-    location: 'Shahbagh, Dhaka',
-    requiredBy: '2024-09-28',
-    description: 'Emergency surgery required. Patient lost significant blood due to accident',
-    requestDate: '2024-09-25',
-    status: 'active',
-    responses: 8,
-    views: 32,
-    verified: true
-  },
-  {
-    id: '3',
-    patientName: 'Mehedi Rahman',
-    bloodGroup: 'B+',
-    urgency: 'medium',
-    hospitalName: 'Chattogram Medical College Hospital',
-    contactInfo: '+880 1815-556677',
-    location: 'Chattogram, Bangladesh',
-    requiredBy: '2024-09-30',
-    description: 'Emergency surgery required. Patient lost significant blood due to accident',
-    requestDate: '2024-09-24',
-    status: 'fulfilled',
-    responses: 15,
-    views: 28,
-    verified: false
-  }
-];
-
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const urgencyLevels = [
@@ -98,7 +39,8 @@ const urgencyLevels = [
 ];
 
 const BloodRequests = () => {
-  const [requests, setRequests] = useState(mockBloodRequests);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBloodGroup, setFilterBloodGroup] = useState('all');
   const [filterUrgency, setFilterUrgency] = useState('all');
@@ -124,6 +66,49 @@ const BloodRequests = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [respondedRequests, setRespondedRequests] = useState(new Set());
+
+  // Fetch requests from backend
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '100'
+      });
+      // Add filters if needed for server-side, but keeping client-side for now
+      const response = await fetch(`http://localhost:3000/api/v1/blood-requests?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch blood requests');
+      }
+      const data = await response.json();
+      const mappedRequests = data.bloodRequests.map((req) => ({
+        id: req._id,
+        patientName: req.patientName,
+        bloodGroup: req.bloodGroup,
+        urgency: req.urgencyLevel.toLowerCase(),
+        hospitalName: req.hospitalName,
+        contactInfo: req.primaryContact,
+        location: req.location,
+        requiredBy: req.requiredBy.split('T')[0],
+        description: req.medicalReason,
+        requestDate: req.createdAt.split('T')[0],
+        status: 'active', // Default; can extend backend for status
+        responses: 0, // Default; can add field later
+        views: 0, // Default
+        verified: false // Default; can add verification field
+      }));
+      setRequests(mappedRequests);
+    } catch (error) {
+      console.error('Error fetching blood requests:', error);
+      alert('Error fetching blood requests: ' + (error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
   // Get unique locations
   const locations = useMemo(() => {
@@ -168,40 +153,63 @@ const BloodRequests = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const newRequest = {
-      id: Date.now().toString(),
-      ...formData,
-      requestDate: new Date().toISOString().split('T')[0],
-      status: 'active',
-      responses: 0,
-      views: 0,
-      verified: false
-    };
+    try {
+      const submitData = {
+        patientName: formData.patientName,
+        bloodGroup: formData.bloodGroup,
+        urgencyLevel: formData.urgency.charAt(0).toUpperCase() + formData.urgency.slice(1),
+        unitsNeeded: parseInt(formData.unitsNeeded) || 1,
+        requiredBy: formData.requiredBy,
+        hospitalName: formData.hospitalName,
+        doctorName: formData.doctorName,
+        primaryContact: formData.contactInfo,
+        emergencyContact: formData.emergencyContact,
+        location: formData.location,
+        medicalReason: formData.medicalCondition,
+        additionalInformation: formData.additionalInfo,
+        detailsDescription: formData.description,
+      };
 
-    setRequests(prev => [newRequest, ...prev]);
+      const response = await fetch('http://localhost:3000/api/v1/blood-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
 
-    // Reset form
-    setFormData({
-      patientName: '',
-      bloodGroup: '',
-      urgency: '',
-      hospitalName: '',
-      contactInfo: '',
-      location: '',
-      requiredBy: '',
-      unitsNeeded: '',
-      description: '',
-      emergencyContact: '',
-      doctorName: '',
-      medicalCondition: '',
-      additionalInfo: ''
-    });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit request');
+      }
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+      // Refetch requests after successful creation
+      await fetchRequests();
+
+      // Reset form
+      setFormData({
+        patientName: '',
+        bloodGroup: '',
+        urgency: '',
+        hospitalName: '',
+        contactInfo: '',
+        location: '',
+        requiredBy: '',
+        unitsNeeded: '',
+        description: '',
+        emergencyContact: '',
+        doctorName: '',
+        medicalCondition: '',
+        additionalInfo: ''
+      });
+
       setActiveTab('view');
       alert('Blood request submitted successfully! Donors will be notified.');
-    }, 1500);
+    } catch (error) {
+      alert('Error submitting request: ' + (error as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -390,6 +398,17 @@ const BloodRequests = () => {
     critical: requests.filter(r => r.urgency === 'critical').length,
     fulfilled: requests.filter(r => r.status === 'fulfilled').length
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-red-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading blood requests...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -799,7 +818,14 @@ const BloodRequests = () => {
                   </div>
 
                   <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
-                    {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit Request'
+                    )}
                   </Button>
                 </form>
               </CardContent>

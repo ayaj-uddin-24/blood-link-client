@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Clock, MapPin, Phone, Calendar, Hospital } from 'lucide-react';
+import { MapPin, Phone, Calendar, Hospital } from 'lucide-react';
 import type { BloodRequest } from '@/data/mockData';
 import { urgencyLevels } from '@/data/mockData';
 

@@ -1,65 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Mail, Phone, Calendar, MapPin, Weight, Heart, Edit, Save, Award, Clock, AlertCircle, Stethoscope } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+  Weight,
+  Heart,
+  Edit,
+  Save,
+  Award,
+  Clock,
+  AlertCircle,
+  Stethoscope,
+  Loader2
+} from 'lucide-react';
 import { bloodGroups } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
-    name: 'Ayaj Uddin',
-    email: 'ayajuddin2024@gmail.com',
-    phone: '+880 131 4313 712',
-    dateOfBirth: '2005-03-27',
-    gender: 'Male',
-    bloodGroup: 'O+',
-    weight: '60',
-    address: 'Muradpur, Chattogram, Bangladesh',
-    emergencyContactName: 'Ayaz',
-    emergencyContactPhone: '+880 131 4313 712',
+    name: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    bloodGroup: '',
+    weight: '',
+    address: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
     preferredDonationType: 'Whole Blood',
     medicalConditions: '',
   });
+  const [donationHistory, setDonationHistory] = useState([]);
 
   const { toast } = useToast();
 
-  // Mock donation history with added types and one upcoming
-  const donationHistory = [
-    { id: '1', date: '2024-01-15', location: 'City Blood Bank', status: 'completed', type: 'Whole Blood' },
-    { id: '2', date: '2023-11-20', location: 'Regional Hospital', status: 'completed', type: 'Plasma' },
-    { id: '3', date: '2023-08-10', location: 'Community Center Drive', status: 'completed', type: 'Whole Blood' },
-    { id: '4', date: '2023-05-05', location: 'University Health Center', status: 'completed', type: 'Platelets' },
-    { id: '5', date: '2025-10-15', location: 'City Blood Bank', status: 'scheduled', type: 'Whole Blood' },
-  ];
-
-  // Calculate dynamic stats
-  const completedDonations = donationHistory.filter(d => d.status === 'completed');
-  const totalDonations = completedDonations.length;
-  const livesImpacted = totalDonations * 3; // Assuming 3 lives per donation
-  const firstDonationDate = new Date(Math.min(...completedDonations.map(d => new Date(d.date).getTime())));
-  const yearsAsDonor = Math.floor((new Date().getTime() - firstDonationDate.getTime()) / (1000 * 60 * 60 * 24 * 365));
-  const lastDonationDate = new Date(Math.max(...completedDonations.map(d => new Date(d.date).getTime())));
-  const nextEligibleDate = new Date(lastDonationDate.getTime() + 56 * 24 * 60 * 60 * 1000);
-  const daysToNext = Math.max(0, Math.ceil((nextEligibleDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
-
-  const stats = [
-    { label: 'Total Donations', value: totalDonations.toString(), icon: Heart },
-    { label: 'Lives Impacted', value: livesImpacted.toString(), icon: Award },
-    { label: 'Years as Donor', value: yearsAsDonor.toString(), icon: Calendar },
-    { label: 'Next Eligible', value: `${daysToNext} days`, icon: Clock },
-  ];
-
-  // Mock donation types
+  // Mock donation types and achievements (extend backend later if needed)
   const donationTypes = ['Whole Blood', 'Plasma', 'Platelets', 'Power Red'];
-
-  // Mock achievements
   const achievements = [
     { name: 'First Time Donor', description: 'Completed your first donation', unlocked: true },
     { name: 'Bronze Donor', description: '5+ donations', unlocked: true },
@@ -68,12 +63,120 @@ const Profile = () => {
     { name: 'Life Saver', description: 'Impacted 30+ lives', unlocked: true },
   ];
 
-  const handleSave = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been successfully updated.",
-    });
-    setIsEditing(false);
+  // Fetch profile and history on load
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          toast({ title: "Error", description: "Please log in to view profile.", variant: "destructive" });
+          return;
+        }
+
+        // Fetch profile
+        const profileResponse = await fetch('http://localhost:3000/api/v1/donor/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!profileResponse.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const profileData = await profileResponse.json();
+        setFormData({
+          name: profileData.data.fullName,
+          email: profileData.data.email,
+          phone: profileData.data.phoneNumber,
+          dateOfBirth: profileData.data.dateOfBirth.split('T')[0],
+          gender: profileData.data.gender.toLowerCase(),
+          bloodGroup: profileData.data.bloodGroup,
+          weight: profileData.data.weight.toString(),
+          address: profileData.data.address,
+          emergencyContactName: '',
+          emergencyContactPhone: '',
+          preferredDonationType: 'Whole Blood',
+          medicalConditions: '',
+        });
+
+        // Fetch donation history
+        const historyResponse = await fetch('http://localhost:3000/donations', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          setDonationHistory(historyData.donations || []);
+        }
+      } catch (error) {
+        toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [toast]);
+
+  // Calculate dynamic stats from history
+  const completedDonations = donationHistory.filter(d => d.status === 'completed');
+  const totalDonations = completedDonations.length;
+  const livesImpacted = totalDonations * 3; // Assuming 3 lives per donation
+  const firstDonationDate = completedDonations.length > 0 ? new Date(Math.min(...completedDonations.map(d => new Date(d.date).getTime()))) : null;
+  const yearsAsDonor = firstDonationDate ? Math.floor((new Date().getTime() - firstDonationDate.getTime()) / (1000 * 60 * 60 * 24 * 365)) : 0;
+  const lastDonationDate = completedDonations.length > 0 ? new Date(Math.max(...completedDonations.map(d => new Date(d.date).getTime()))) : null;
+  const nextEligibleDate = lastDonationDate ? new Date(lastDonationDate.getTime() + 56 * 24 * 60 * 60 * 1000) : null;
+  const daysToNext = nextEligibleDate ? Math.max(0, Math.ceil((nextEligibleDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : 0;
+
+  const stats = [
+    { label: 'Total Donations', value: totalDonations.toString(), icon: Heart },
+    { label: 'Lives Impacted', value: livesImpacted.toString(), icon: Award },
+    { label: 'Years as Donor', value: yearsAsDonor.toString(), icon: Calendar },
+    { label: 'Next Eligible', value: `${daysToNext} days`, icon: Clock },
+  ];
+
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const updateData = {
+        fullName: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
+        bloodGroup: formData.bloodGroup,
+        weight: parseInt(formData.weight),
+        address: formData.address,
+        // Add emergency, preferred, medical if backend extended
+      };
+
+      const response = await fetch('http://localhost:3000/profile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile information has been successfully updated.",
+      });
+      setIsEditing(false);
+    } catch (error) {
+      toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -112,12 +215,48 @@ const Profile = () => {
     return status === 'completed' ? 'bg-success text-success-foreground' : 'bg-warning text-warning-foreground';
   };
 
-  const handleScheduleDonation = () => {
-    toast({
-      title: "Donation Scheduled",
-      description: "You've successfully scheduled your next donation. Check your email for details.",
-    });
+  const handleScheduleDonation = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      // Assume endpoint for scheduling; extend backend
+      const response = await fetch('http://localhost:3000/schedule-donation', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: formData.preferredDonationType }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to schedule donation');
+      }
+
+      toast({
+        title: "Donation Scheduled",
+        description: "You've successfully scheduled your next donation. Check your email for details.",
+      });
+
+      // Refetch history
+      const historyResponse = await fetch('http://localhost:3000/donations', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        setDonationHistory(historyData.donations || []);
+      }
+    } catch (error) {
+      toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-secondary/30 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30">
@@ -272,17 +411,17 @@ const Profile = () => {
                       <span>Gender</span>
                     </Label>
                     <Select
-                      value={formData.gender.toLowerCase()}
-                      onValueChange={(value) => handleSelectChange('gender', value.charAt(0).toUpperCase() + value.slice(1))}
+                      value={formData.gender}
+                      onValueChange={(value) => handleSelectChange('gender', value)}
                       disabled={!isEditing}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -449,7 +588,7 @@ const Profile = () => {
                 <div className="mt-6 p-4 bg-accent/20 rounded-lg">
                   <h4 className="font-medium text-foreground mb-2">Next Donation Eligibility</h4>
                   <p className="text-sm text-muted-foreground">
-                    You can donate again after <strong>{nextEligibleDate.toLocaleDateString()}</strong> ({daysToNext} days remaining).
+                    You can donate again after <strong>{nextEligibleDate ? nextEligibleDate.toLocaleDateString() : 'N/A'}</strong> ({daysToNext} days remaining).
                     Regular blood donors can donate every 56 days (8 weeks).
                   </p>
                 </div>

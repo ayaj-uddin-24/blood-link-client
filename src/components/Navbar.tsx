@@ -1,21 +1,34 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, X, User, Users, FileText, Home } from 'lucide-react';
+import { Heart, Menu, X, User, Users, FileText, Home, LogOut } from 'lucide-react';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const navItems = [
+  const isLoggedIn = localStorage.getItem('token') !== null;
+
+  const commonNavItems = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/donors', label: 'Find Donors', icon: Users },
     { href: '/requests', label: 'Blood Requests', icon: FileText },
     { href: "/report", label: "Report", icon: FileText },
-    { href: '/profile', label: 'Profile', icon: User },
+  ];
+
+  const navItems = [
+    ...commonNavItems,
+    ...(isLoggedIn ? [{ href: '/profile', label: 'Profile', icon: User }] : []),
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsMobileMenuOpen(false);
+    navigate('/');
+  };
 
   return (
     <nav className="bg-card border-b border-border shadow-soft">
@@ -48,16 +61,36 @@ const Navbar = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link to="/login">
-              <Button variant="outline" size="sm">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="gradient-hero hover:opacity-90 transition-base">
-                Register as Donor
-              </Button>
-            </Link>
+            {!isLoggedIn ? (
+              <>
+                <Link to="/login">
+                  <Button variant="outline" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm" className="gradient-hero hover:opacity-90 transition-base">
+                    Register as Donor
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/profile">
+                  <Button variant="outline" size="sm">
+                    Profile
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -94,18 +127,37 @@ const Navbar = () => {
                   <span>{label}</span>
                 </Link>
               ))}
-              <div className="pt-4 flex flex-col gap-2">
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Sign In
+              {!isLoggedIn ? (
+                <div className="pt-4 flex flex-col gap-2">
+                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button size="sm" className="w-full gradient-hero hover:opacity-90 transition-base">
+                      Register as Donor
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="pt-4 flex flex-col gap-2">
+                  <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
                   </Button>
-                </Link>
-                <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button size="sm" className="w-full gradient-hero hover:opacity-90 transition-base">
-                    Register as Donor
-                  </Button>
-                </Link>
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}

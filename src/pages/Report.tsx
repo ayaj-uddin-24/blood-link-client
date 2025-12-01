@@ -1,25 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, User, Mail, Flag, Clock, FileText, ShieldCheck, Search, Filter, AlertOctagon, RotateCcw, Eye, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+    AlertCircle,
+    User,
+    Mail,
+    Flag,
+    Clock,
+    FileText,
+    ShieldCheck,
+    Search,
+    Filter,
+    RotateCcw,
+    Eye,
+    Plus,
+    ChevronDown,
+    ChevronUp,
+    Loader2
+} from 'lucide-react';
 
 const Report = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [reports, setReports] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
     const [showFilters, setShowFilters] = useState(false);
     const [activeTab, setActiveTab] = useState('view');
-    const [expandedReport, setExpandedReport] = useState(null);
     const [formData, setFormData] = useState({
-        reportedUserType: 'donor',
+        reportedUserType: 'blood donor',
         reportedUserId: '',
         reportCategory: '',
         description: '',
@@ -27,54 +50,24 @@ const Report = () => {
         evidenceUrl: '',
     });
 
-    // Mock previous reports
-    const previousReports = [
-        {
-            id: '1',
-            date: '2024-02-10',
-            reportedUser: 'Abdul Karim (Donor)',
-            category: 'Fake Profile',
-            status: 'Under Review',
-            description: 'Donor provided false information about blood group and donation history. Suspected of using another person’s ID.',
-            evidence: 'https://example.com/evidence1.jpg',
-            resolutionNotes: 'Verification team is checking NID and hospital donation records.',
-            priority: 'High'
-        },
-        {
-            id: '2',
-            date: '2023-12-05',
-            reportedUser: 'Mitu Akter (Recipient)',
-            category: 'Harassment',
-            status: 'Resolved',
-            description: 'Sent inappropriate personal messages to a donor during coordination.',
-            evidence: '',
-            resolutionNotes: 'User received a warning and is under monitoring. No further issues reported.',
-            priority: 'Medium'
-        },
-        {
-            id: '3',
-            date: '2023-09-15',
-            reportedUser: 'Shafiqul Islam (Donor)',
-            category: 'Spam',
-            status: 'Dismissed',
-            description: 'Sent repeated messages about contacting directly outside the platform.',
-            evidence: 'https://example.com/evidence3.pdf',
-            resolutionNotes: 'Investigation confirmed genuine attempts to coordinate donation. Case closed.',
-            priority: 'Low'
-        },
-        {
-            id: '4',
-            date: '2024-03-20',
-            reportedUser: 'Razia Sultana (Recipient)',
-            category: 'Fraud',
-            status: 'Under Review',
-            description: 'Created suspicious blood requests with inconsistent medical documents.',
-            evidence: '',
-            resolutionNotes: 'Medical verification team is reviewing hospital records and prescriptions.',
-            priority: 'High'
-        }
-    ];
+    // Category mapping for backend/frontend
+    const categoryMap = {
+        'fake-profile': 'fake people',
+        'harassment': 'harassment',
+        'spam': 'spam',
+        'inappropriate-behavior': 'rude behavior',
+        'fraud': 'fraud',
+        'other': 'other',
+    };
 
+    const reverseCategoryMap = {
+        'fake people': 'Fake Profile',
+        'harassment': 'Harassment',
+        'spam': 'Spam',
+        'rude behavior': 'Inappropriate Behavior',
+        'fraud': 'Fraud',
+        'other': 'Other',
+    };
 
     const reportCategories = [
         { value: 'fake-profile', label: 'Fake Profile', icon: '👤' },
@@ -86,6 +79,53 @@ const Report = () => {
     ];
 
     const statuses = ['Under Review', 'Resolved', 'Dismissed'];
+
+    // Fetch reports from backend
+    const fetchReports = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const params = new URLSearchParams({
+                page: '1',
+                limit: '100'
+            });
+            if (filterCategory !== 'all') params.append('category', categoryMap[filterCategory] || filterCategory);
+            if (filterStatus !== 'all') params.append('anonymous', 'false');
+
+            const response = await fetch(`http://localhost:3000/api/v1/reports`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch reports');
+            }
+            const data = await response.json();
+            const mappedReports = data.reports.map((report) => ({
+                id: report._id,
+                date: report.createdAt.split('T')[0],
+                reportedUser: report.userIdentification || 'Anonymous',
+                category: reverseCategoryMap[report.reportCategory] || report.reportCategory,
+                status: 'Under Review',
+                description: report.detailedDescription,
+                evidence: report.supportingEvidence || '',
+                resolutionNotes: '',
+                priority: 'Medium',
+                anonymous: report.anonymous,
+            }));
+            setReports(mappedReports);
+        } catch (error) {
+            console.error('Error fetching reports:', error);
+            alert('Error fetching reports: ' + (error as Error).message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReports();
+    }); // Refetch when switching tabs if needed
 
     const handleChange = (e) => {
         setFormData(prev => ({
@@ -108,12 +148,37 @@ const Report = () => {
         }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setIsSubmitting(true);
-        setTimeout(() => {
-            setIsSubmitting(false);
+        try {
+            const submitData = {
+                userType: formData.reportedUserType,
+                userIdentification: formData.anonymous ? undefined : formData.reportedUserId,
+                reportCategory: categoryMap[formData.reportCategory] || formData.reportCategory,
+                detailedDescription: formData.description,
+                supportingEvidence: formData.evidenceUrl,
+                anonymous: formData.anonymous,
+            };
+
+            const response = await fetch('http://localhost:3000/api/v1/reports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(submitData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to submit report');
+            }
+
+            // Refetch reports after successful submission
+            await fetchReports();
+
+            // Reset form
             setFormData({
-                reportedUserType: 'donor',
+                reportedUserType: 'blood donor',
                 reportedUserId: '',
                 reportCategory: '',
                 description: '',
@@ -121,7 +186,12 @@ const Report = () => {
                 evidenceUrl: '',
             });
             setActiveTab('view');
-        }, 2000);
+            alert('Report submitted successfully!');
+        } catch (error) {
+            alert('Error submitting report: ' + (error as Error).message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const getStatusStyles = (status) => {
@@ -147,14 +217,14 @@ const Report = () => {
             'Fake Profile': '👤',
             'Harassment': '🚫',
             'Spam': '📧',
-            'Fraud': '💰',
             'Inappropriate Behavior': '⚠️',
+            'Fraud': '💰',
             'Other': '❓'
         };
         return icons[category] || '❓';
     };
 
-    const filteredReports = previousReports.filter(report => {
+    const filteredReports = reports.filter(report => {
         const matchesSearch = report.reportedUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
             report.description.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = filterCategory === 'all' || report.category === filterCategory;
@@ -169,11 +239,22 @@ const Report = () => {
     };
 
     const stats = {
-        total: previousReports.length,
-        underReview: previousReports.filter(r => r.status === 'Under Review').length,
-        resolved: previousReports.filter(r => r.status === 'Resolved').length,
-        dismissed: previousReports.filter(r => r.status === 'Dismissed').length,
+        total: reports.length,
+        underReview: reports.filter(r => r.status === 'Under Review').length,
+        resolved: reports.filter(r => r.status === 'Resolved').length,
+        dismissed: reports.filter(r => r.status === 'Dismissed').length,
     };
+
+    if (loading && activeTab === 'view') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Loading reports...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -270,7 +351,7 @@ const Report = () => {
                                                     <SelectContent>
                                                         <SelectItem value="all">All Categories</SelectItem>
                                                         {reportCategories.map((cat) => (
-                                                            <SelectItem key={cat.value} value={cat.label}>
+                                                            <SelectItem key={cat.value} value={cat.value}>
                                                                 <span className="flex items-center">
                                                                     <span className="mr-2">{cat.icon}</span>
                                                                     {cat.label}
@@ -320,8 +401,7 @@ const Report = () => {
                             {filteredReports.map((report) => (
                                 <Card
                                     key={report.id}
-                                    className={`group hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border-0 shadow-lg overflow-hidden bg-white`}
-                                    onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}
+                                    className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg overflow-hidden bg-white"
                                 >
                                     <CardHeader className={`pb-3 ${report.status === 'Under Review' ? 'bg-gradient-to-r from-amber-50 to-orange-50' : report.status === 'Resolved' ? 'bg-gradient-to-r from-emerald-50 to-green-50' : 'bg-gradient-to-r from-rose-50 to-red-50'}`}>
                                         <div className="flex justify-between items-start">
@@ -370,27 +450,19 @@ const Report = () => {
                                         </div>
 
                                         <div className="bg-gray-50 p-4 rounded-xl">
-                                            <p className={`text-sm text-gray-700 ${expandedReport === report.id ? '' : 'line-clamp-3'}`}>
+                                            <p className="text-sm text-gray-700 line-clamp-3">
                                                 {report.description}
                                             </p>
                                         </div>
 
-                                        {expandedReport === report.id && (
+                                        {report.evidence && (
                                             <div className="space-y-3 animate-in fade-in duration-200">
-                                                {report.evidence && (
-                                                    <div className="flex items-center space-x-2 text-blue-600">
-                                                        <FileText className="h-4 w-4" />
-                                                        <a href={report.evidence} target="_blank" rel="noopener noreferrer" className="text-sm hover:underline">
-                                                            View Evidence
-                                                        </a>
-                                                    </div>
-                                                )}
-                                                {report.resolutionNotes && (
-                                                    <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
-                                                        <p className="text-sm font-medium text-blue-800 mb-1">Resolution Notes:</p>
-                                                        <p className="text-sm text-blue-700">{report.resolutionNotes}</p>
-                                                    </div>
-                                                )}
+                                                <div className="flex items-center space-x-2 text-blue-600">
+                                                    <FileText className="h-4 w-4" />
+                                                    <a href={report.evidence} target="_blank" rel="noopener noreferrer" className="text-sm hover:underline">
+                                                        View Evidence
+                                                    </a>
+                                                </div>
                                             </div>
                                         )}
                                     </CardContent>
@@ -443,7 +515,7 @@ const Report = () => {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="donor">🩸 Blood Donor</SelectItem>
+                                                <SelectItem value="blood donor">🩸 Blood Donor</SelectItem>
                                                 <SelectItem value="recipient">🏥 Recipient</SelectItem>
                                                 <SelectItem value="other">👥 Other User</SelectItem>
                                             </SelectContent>
@@ -551,7 +623,7 @@ const Report = () => {
                                     >
                                         {isSubmitting ? (
                                             <>
-                                                <Clock className="h-5 w-5 mr-2 animate-spin" />
+                                                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                                                 Submitting Report...
                                             </>
                                         ) : (

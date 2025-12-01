@@ -1,17 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Search,
-  Filter,
   MapPin,
   Users,
   Phone,
-  Mail,
-  Calendar,
   Clock,
   Heart,
   Star,
@@ -25,92 +29,16 @@ import {
   Shield
 } from 'lucide-react';
 
-// Mock data for demonstration
-const mockDonors = [
-  {
-    id: 1,
-    name: 'Moumita Sultana',
-    bloodGroup: 'O+',
-    gender: 'Female',
-    age: 26,
-    location: 'Dhaka, Bangladesh',
-    phone: '+880 1712-334455',
-    email: 'moumita.sultana@email.com',
-    lastDonation: '2024-01-12',
-    donationCount: 10,
-    isAvailable: true,
-    rating: 4.9,
-    verified: true,
-    distance: 2.3,
-    responseTime: '< 1 hour',
-    profileImage: '👩‍⚕️'
-  },
-  {
-    id: 2,
-    name: 'Tanvir Ahmed',
-    bloodGroup: 'A-',
-    gender: 'Male',
-    age: 34,
-    location: 'Sylhet, Bangladesh',
-    phone: '+880 1815-556677',
-    email: 'tanvir.ahmed@email.com',
-    lastDonation: '2024-02-18',
-    donationCount: 7,
-    isAvailable: true,
-    rating: 4.7,
-    verified: true,
-    distance: 4.9,
-    responseTime: '< 2 hours',
-    profileImage: '👨‍⚕️'
-  },
-  {
-    id: 3,
-    name: 'Shahriar Kabir',
-    bloodGroup: 'B+',
-    gender: 'Male',
-    age: 29,
-    location: 'Khulna, Bangladesh',
-    phone: '+880 1911-778899',
-    email: 'shahriar.kabir@email.com',
-    lastDonation: '2024-01-28',
-    donationCount: 13,
-    isAvailable: false,
-    rating: 5.0,
-    verified: true,
-    distance: 3.6,
-    responseTime: '< 30 mins',
-    profileImage: '🩸'
-  },
-  {
-    id: 4,
-    name: 'Farzana Akter',
-    bloodGroup: 'AB+',
-    gender: 'Female',
-    age: 39,
-    location: 'Barishal, Bangladesh',
-    phone: '+880 1713-889900',
-    email: 'farzana.akter@email.com',
-    lastDonation: '2024-02-08',
-    donationCount: 20,
-    isAvailable: true,
-    rating: 4.8,
-    verified: true,
-    distance: 6.7,
-    responseTime: '< 1 hour',
-    profileImage: '🏥'
-  }
-];
-
-
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 const Donors = () => {
+  const [donors, setDonors] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBloodGroup, setSelectedBloodGroup] = useState('all');
   const [selectedGender, setSelectedGender] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // grid, list, map
+  const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('distance');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [maxDistance, setMaxDistance] = useState(10);
@@ -118,15 +46,63 @@ const Donors = () => {
   const [favorites, setFavorites] = useState(new Set());
   const [contactedDonors, setContactedDonors] = useState(new Set());
 
+  // Calculate age from date of birth
+  const calculateAge = (dob: string) => {
+    const birthDate = new Date(dob);
+    const today = new Date(2025, 9, 4); // October 04, 2025
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Fetch donors from backend
+  useEffect(() => {
+    const fetchDonors = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/v1/donor');
+        if (!response.ok) {
+          throw new Error('Failed to fetch donors');
+        }
+        const data = await response.json();
+        const mappedDonors = data.donors.map((donor: any) => ({
+          id: donor._id,
+          name: donor.fullName,
+          bloodGroup: donor.bloodGroup,
+          gender: donor.gender,
+          age: calculateAge(donor.dateOfBirth),
+          location: donor.address,
+          phone: donor.phoneNumber,
+          email: donor.email,
+          lastDonation: null,
+          donationCount: 0,
+          isAvailable: true,
+          rating: 5.0,
+          verified: false,
+          distance: Math.floor(Math.random() * 20) + 1, // Simulated distance
+          responseTime: ['< 30 mins', '< 1 hour', '< 2 hours'][Math.floor(Math.random() * 3)],
+          profileImage: donor.gender === 'Male' ? '👨' : donor.gender === 'Female' ? '👩' : '🧑'
+        }));
+        setDonors(mappedDonors);
+      } catch (error) {
+        console.error('Error fetching donors:', error);
+      }
+    };
+
+    fetchDonors();
+  }, []);
+
   // Get unique locations from donors
   const locations = useMemo(() => {
-    const uniqueLocations = [...new Set(mockDonors.map(donor => donor.location))];
+    const uniqueLocations = [...new Set(donors.map((donor: any) => donor.location))];
     return uniqueLocations.sort();
-  }, []);
+  }, [donors]);
 
   // Filter and sort donors
   const filteredDonors = useMemo(() => {
-    let filtered = mockDonors.filter(donor => {
+    let filtered = donors.filter((donor: any) => {
       const matchesSearch = donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         donor.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesBloodGroup = selectedBloodGroup === 'all' || donor.bloodGroup === selectedBloodGroup;
@@ -141,7 +117,7 @@ const Donors = () => {
     });
 
     // Sort donors
-    filtered.sort((a, b) => {
+    filtered.sort((a: any, b: any) => {
       switch (sortBy) {
         case 'distance':
           return a.distance - b.distance;
@@ -160,19 +136,18 @@ const Donors = () => {
 
     // Emergency mode: prioritize available donors
     if (emergencyMode) {
-      filtered = filtered.filter(donor => donor.isAvailable);
+      filtered = filtered.filter((donor: any) => donor.isAvailable);
     }
 
     return filtered;
-  }, [searchTerm, selectedBloodGroup, selectedGender, selectedLocation, availabilityFilter, maxDistance, sortBy, emergencyMode]);
+  }, [donors, searchTerm, selectedBloodGroup, selectedGender, selectedLocation, availabilityFilter, maxDistance, sortBy, emergencyMode]);
 
-  const handleContactDonor = (donor) => {
+  const handleContactDonor = (donor: any) => {
     setContactedDonors(prev => new Set([...prev, donor.id]));
-    // Simulate contact action
     alert(`Contacting ${donor.name}...\nPhone: ${donor.phone}\nEmail: ${donor.email}`);
   };
 
-  const toggleFavorite = (donorId) => {
+  const toggleFavorite = (donorId: string | number) => {
     setFavorites(prev => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(donorId)) {
@@ -193,7 +168,7 @@ const Donors = () => {
     setMaxDistance(10);
   };
 
-  const DonorCard = ({ donor, isListView = false }) => (
+  const DonorCard = ({ donor, isListView = false }: { donor: any; isListView?: boolean }) => (
     <Card className={`group hover:shadow-lg transition-all duration-200 border ${donor.isAvailable ? 'border-green-200 hover:border-green-300' : 'border-gray-200'} ${isListView ? 'mb-4' : ''}`}>
       <CardContent className={`p-4 ${isListView ? 'flex items-center space-x-4' : ''}`}>
         {/* Profile Section */}
@@ -319,7 +294,7 @@ const Donors = () => {
                 )}
               </div>
               <p className="text-gray-600 mt-1">
-                {mockDonors.length} registered donors • {filteredDonors.filter(d => d.isAvailable).length} available now
+                {donors.length} registered donors • {filteredDonors.filter((d: any) => d.isAvailable).length} available now
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -459,7 +434,7 @@ const Donors = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Locations</SelectItem>
-                        {locations.map(location => (
+                        {locations.map((location: string) => (
                           <SelectItem key={location} value={location}>
                             <div className="flex items-center">
                               <MapPin className="h-4 w-4 mr-2" />
@@ -502,7 +477,7 @@ const Donors = () => {
 
                 <div className="flex justify-between items-center">
                   <div className="text-sm text-gray-500">
-                    Showing {filteredDonors.length} of {mockDonors.length} donors
+                    Showing {filteredDonors.length} of {donors.length} donors
                   </div>
                   <Button onClick={clearFilters} variant="outline" size="sm">
                     Clear All Filters
@@ -543,7 +518,7 @@ const Donors = () => {
           </Card>
         ) : (
           <div className={viewMode === 'list' ? 'space-y-0' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'}>
-            {filteredDonors.map(donor => (
+            {filteredDonors.map((donor: any) => (
               <DonorCard
                 key={donor.id}
                 donor={donor}

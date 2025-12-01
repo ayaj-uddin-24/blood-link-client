@@ -1,6 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, Users, Clock, Award, Phone, UserPlus, ArrowDown, CheckCircle, MapPin, Shield } from 'lucide-react';
+import {
+  Heart,
+  Users,
+  Clock,
+  Award,
+  UserPlus,
+  CheckCircle,
+  MapPin,
+  Shield
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const Home = () => {
