@@ -1,3 +1,5 @@
+import { Heart, Users, Clock, Award, Shield } from "lucide-react";
+
 export interface Donor {
   id: string;
   name: string;
@@ -207,13 +209,175 @@ export const bloodGroupCompatibility = {
 
 export const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-export const urgencyLevels = [
-  { value: "low", label: "Low", color: "text-success" },
-  { value: "medium", label: "Medium", color: "text-warning" },
-  { value: "high", label: "High", color: "text-destructive" },
+export const stats = [
   {
-    value: "critical",
-    label: "Critical",
-    color: "text-destructive font-semibold",
+    icon: Users,
+    label: "Registered Donors",
+    value: "2,500+",
+    color: "text-blue-600",
+  },
+  {
+    icon: Heart,
+    label: "Lives Saved",
+    value: "15,000+",
+    color: "text-red-500",
+  },
+  {
+    icon: Clock,
+    label: "Blood Units Donated",
+    value: "8,200+",
+    color: "text-green-600",
+  },
+  {
+    icon: Award,
+    label: "Active Requests",
+    value: "24",
+    color: "text-purple-600",
   },
 ];
+
+export const features = [
+  {
+    icon: Users,
+    title: "Smart Donor Matching",
+    description:
+      "AI-powered matching system connects you with compatible donors in your area instantly.",
+    color: "from-blue-500 to-blue-600",
+  },
+  {
+    icon: Clock,
+    title: "Emergency Response",
+    description:
+      "Critical blood requests are prioritized with instant notifications to nearby donors.",
+    color: "from-red-500 to-red-600",
+  },
+  {
+    icon: Shield,
+    title: "Verified & Secure",
+    description:
+      "All donors are verified with secure, encrypted communication for your safety.",
+    color: "from-green-500 to-green-600",
+  },
+];
+
+export const testimonials = [
+  {
+    name: "Mahfuz Uddin",
+    role: "Blood Recipient",
+    text: "BloodLink saved my life during emergency surgery. Found a donor in just 15 minutes!",
+    avatar: "👩‍⚕️",
+  },
+  {
+    name: "Dr. Sourob Hossen",
+    role: "Emergency Physician",
+    text: "This platform has revolutionized how we handle blood emergencies in our hospital.",
+    avatar: "👨‍⚕️",
+  },
+  {
+    name: "Habibur Rahman",
+    role: "Regular Donor",
+    text: "Donating blood has never been easier. The app keeps me informed about local needs.",
+    avatar: "🩸",
+  },
+];
+
+export const categoryMap = {
+  "fake-profile": "fake people",
+  harassment: "harassment",
+  spam: "spam",
+  "inappropriate-behavior": "rude behavior",
+  fraud: "fraud",
+  other: "other",
+};
+
+export const statuses = ["Under Review", "Resolved", "Dismissed"];
+
+export const displayCategoryMap = {
+  "fake people": "Fake Profile",
+  harassment: "Harassment",
+  spam: "Spam",
+  "rude behavior": "Inappropriate Behavior",
+  fraud: "Fraud",
+  other: "Other",
+};
+
+export const reportCategories = [
+  { value: "fake-profile", label: "Fake Profile", icon: "User" },
+  { value: "harassment", label: "Harassment", icon: "NoEntry" },
+  { value: "spam", label: "Spam", icon: "Envelope" },
+  {
+    value: "inappropriate-behavior",
+    label: "Inappropriate Behavior",
+    icon: "Warning",
+  },
+  { value: "fraud", label: "Fraud", icon: "DollarSign" },
+  { value: "other", label: "Other", icon: "HelpCircle" },
+];
+
+export const getStatusStyles = (status) => {
+  const styles = {
+    "Under Review": "bg-amber-50 text-amber-700 border-amber-200",
+    Resolved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    Dismissed: "bg-rose-50 text-rose-700 border-rose-200",
+  };
+  return styles[status] || "bg-gray-50 text-gray-700 border-gray-200";
+};
+
+export const getPriorityStyles = (priority) => {
+  const styles = {
+    High: "bg-red-100 text-red-800",
+    Medium: "bg-yellow-100 text-yellow-800",
+    Low: "bg-blue-100 text-blue-800",
+  };
+  return styles[priority] || "bg-gray-100 text-gray-800";
+};
+
+export const getCategoryIcon = (category) => {
+  const map = {
+    "Fake Profile": "User",
+    Harassment: "NoEntry",
+    Spam: "Envelope",
+    "Inappropriate Behavior": "Warning",
+    Fraud: "DollarSign",
+    Other: "HelpCircle",
+  };
+  return map[category] || "HelpCircle";
+};
+
+export const urgencyLevels = [
+  {
+    value: "low",
+    label: "Low Priority",
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+  },
+  {
+    value: "medium",
+    label: "Medium Priority",
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-100",
+  },
+  {
+    value: "high",
+    label: "High Priority",
+    color: "text-orange-600",
+    bgColor: "bg-orange-100",
+  },
+  {
+    value: "critical",
+    label: "Critical/Emergency",
+    color: "text-red-600",
+    bgColor: "bg-red-100",
+  },
+];
+
+export const colors = {
+  "O+": "bg-primary text-primary-foreground",
+  "O-": "bg-destructive text-destructive-foreground",
+  "A+": "bg-success text-success-foreground",
+  "A-": "bg-warning text-warning-foreground",
+  "B+": "bg-blue-600 text-white",
+  "B-": "bg-purple-600 text-white",
+  "AB+": "bg-orange-600 text-white",
+  "AB-": "bg-pink-600 text-white",
+};

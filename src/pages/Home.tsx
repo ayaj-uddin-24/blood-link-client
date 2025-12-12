@@ -3,14 +3,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   Heart,
   Users,
-  Clock,
-  Award,
   UserPlus,
   CheckCircle,
   MapPin,
-  Shield
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { features, stats, testimonials } from '../data/mockData';
 
 const Home = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -21,58 +19,8 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const stats = [
-    { icon: Users, label: 'Registered Donors', value: '2,500+', color: 'text-blue-600' },
-    { icon: Heart, label: 'Lives Saved', value: '15,000+', color: 'text-red-500' },
-    { icon: Clock, label: 'Blood Units Donated', value: '8,200+', color: 'text-green-600' },
-    { icon: Award, label: 'Active Requests', value: '24', color: 'text-purple-600' },
-  ];
-
-  const features = [
-    {
-      icon: Users,
-      title: 'Smart Donor Matching',
-      description: 'AI-powered matching system connects you with compatible donors in your area instantly.',
-      color: 'from-blue-500 to-blue-600',
-    },
-    {
-      icon: Clock,
-      title: 'Emergency Response',
-      description: 'Critical blood requests are prioritized with instant notifications to nearby donors.',
-      color: 'from-red-500 to-red-600',
-    },
-    {
-      icon: Shield,
-      title: 'Verified & Secure',
-      description: 'All donors are verified with secure, encrypted communication for your safety.',
-      color: 'from-green-500 to-green-600',
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: 'Mahfuz Uddin',
-      role: 'Blood Recipient',
-      text: 'BloodLink saved my life during emergency surgery. Found a donor in just 15 minutes!',
-      avatar: '👩‍⚕️'
-    },
-    {
-      name: 'Dr. Sourob Hossen',
-      role: 'Emergency Physician',
-      text: 'This platform has revolutionized how we handle blood emergencies in our hospital.',
-      avatar: '👨‍⚕️'
-    },
-    {
-      name: 'Habibur Rahman',
-      role: 'Regular Donor',
-      text: 'Donating blood has never been easier. The app keeps me informed about local needs.',
-      avatar: '🩸'
-    }
-  ];
-
   return (
     <div className="min-h-screen">
-      {/* Full Screen Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image with Red Overlay */}
         <div

@@ -1,4 +1,5 @@
 /* eslint-disable no-case-declarations */
+
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,14 +30,7 @@ import {
   Shield,
   Loader2
 } from 'lucide-react';
-
-const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-const urgencyLevels = [
-  { value: 'low', label: 'Low Priority', color: 'text-green-600', bgColor: 'bg-green-100' },
-  { value: 'medium', label: 'Medium Priority', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  { value: 'high', label: 'High Priority', color: 'text-orange-600', bgColor: 'bg-orange-100' },
-  { value: 'critical', label: 'Critical/Emergency', color: 'text-red-600', bgColor: 'bg-red-100' }
-];
+import { bloodGroups, urgencyLevels } from '../data/mockData';
 
 const BloodRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -75,7 +69,7 @@ const BloodRequests = () => {
         page: '1',
         limit: '100'
       });
-      // Add filters if needed for server-side, but keeping client-side for now
+
       const response = await fetch(`http://localhost:3000/api/v1/blood-requests?${params}`);
       if (!response.ok) {
         throw new Error('Failed to fetch blood requests');
@@ -92,11 +86,12 @@ const BloodRequests = () => {
         requiredBy: req.requiredBy.split('T')[0],
         description: req.medicalReason,
         requestDate: req.createdAt.split('T')[0],
-        status: 'active', // Default; can extend backend for status
-        responses: 0, // Default; can add field later
-        views: 0, // Default
-        verified: false // Default; can add verification field
+        status: 'active',
+        responses: 0,
+        views: 0,
+        verified: false
       }));
+
       setRequests(mappedRequests);
     } catch (error) {
       console.error('Error fetching blood requests:', error);

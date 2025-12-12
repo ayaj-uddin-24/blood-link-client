@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Phone, MapPin, Calendar, Award } from 'lucide-react';
-import type { Donor } from '@/data/mockData';
+import { colors, type Donor } from '@/data/mockData';
 
 interface DonorCardProps {
   donor: Donor;
@@ -12,16 +12,6 @@ interface DonorCardProps {
 
 const DonorCard = ({ donor, onContact }: DonorCardProps) => {
   const getBloodGroupColor = (bloodGroup: string) => {
-    const colors = {
-      'O+': 'bg-primary text-primary-foreground',
-      'O-': 'bg-destructive text-destructive-foreground',
-      'A+': 'bg-success text-success-foreground',
-      'A-': 'bg-warning text-warning-foreground',
-      'B+': 'bg-blue-600 text-white',
-      'B-': 'bg-purple-600 text-white',
-      'AB+': 'bg-orange-600 text-white',
-      'AB-': 'bg-pink-600 text-white',
-    };
     return colors[bloodGroup as keyof typeof colors] || 'bg-muted text-muted-foreground';
   };
 

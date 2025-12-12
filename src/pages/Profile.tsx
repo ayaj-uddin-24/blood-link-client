@@ -53,7 +53,7 @@ const Profile = () => {
 
   const { toast } = useToast();
 
-  // Mock donation types and achievements (extend backend later if needed)
+  // Mock donation types and achievements
   const donationTypes = ['Whole Blood', 'Plasma', 'Platelets', 'Power Red'];
   const achievements = [
     { name: 'First Time Donor', description: 'Completed your first donation', unlocked: true },
@@ -153,7 +153,6 @@ const Profile = () => {
         bloodGroup: formData.bloodGroup,
         weight: parseInt(formData.weight),
         address: formData.address,
-        // Add emergency, preferred, medical if backend extended
       };
 
       const response = await fetch('http://localhost:3000/profile', {
@@ -218,7 +217,6 @@ const Profile = () => {
   const handleScheduleDonation = async () => {
     try {
       const token = localStorage.getItem('token');
-      // Assume endpoint for scheduling; extend backend
       const response = await fetch('http://localhost:3000/schedule-donation', {
         method: 'POST',
         headers: {

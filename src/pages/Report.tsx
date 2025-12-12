@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +33,7 @@ import {
     ChevronUp,
     Loader2
 } from 'lucide-react';
+import { categoryMap, displayCategoryMap, getCategoryIcon, getPriorityStyles, getStatusStyles, reportCategories, statuses } from '../data/mockData';
 
 const Report = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +44,7 @@ const Report = () => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [showFilters, setShowFilters] = useState(false);
     const [activeTab, setActiveTab] = useState('view');
+
     const [formData, setFormData] = useState({
         reportedUserType: 'blood donor',
         reportedUserId: '',
@@ -50,82 +54,78 @@ const Report = () => {
         evidenceUrl: '',
     });
 
-    // Category mapping for backend/frontend
-    const categoryMap = {
-        'fake-profile': 'fake people',
-        'harassment': 'harassment',
-        'spam': 'spam',
-        'inappropriate-behavior': 'rude behavior',
-        'fraud': 'fraud',
-        'other': 'other',
-    };
-
-    const reverseCategoryMap = {
-        'fake people': 'Fake Profile',
-        'harassment': 'Harassment',
-        'spam': 'Spam',
-        'rude behavior': 'Inappropriate Behavior',
-        'fraud': 'Fraud',
-        'other': 'Other',
-    };
-
-    const reportCategories = [
-        { value: 'fake-profile', label: 'Fake Profile', icon: '👤' },
-        { value: 'harassment', label: 'Harassment', icon: '🚫' },
-        { value: 'spam', label: 'Spam', icon: '📧' },
-        { value: 'inappropriate-behavior', label: 'Inappropriate Behavior', icon: '⚠️' },
-        { value: 'fraud', label: 'Fraud', icon: '💰' },
-        { value: 'other', label: 'Other', icon: '❓' },
-    ];
-
-    const statuses = ['Under Review', 'Resolved', 'Dismissed'];
-
-    // Fetch reports from backend
+    // Fetch reports with proper dependencies
     const fetchReports = async () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const params = new URLSearchParams({
-                page: '1',
-                limit: '100'
-            });
-            if (filterCategory !== 'all') params.append('category', categoryMap[filterCategory] || filterCategory);
-            if (filterStatus !== 'all') params.append('anonymous', 'false');
+            if (!token) {
+                alert('Please log in to view reports');
+                setLoading(false);
+                return;
+            }
 
-            const response = await fetch(`http://localhost:3000/api/v1/reports`, {
+            let url = `http://localhost:3000/api/v1/reports?page=1&limit=100`;
+
+            // Apply filters only if not 'all'
+            const params = new URLSearchParams();
+            if (filterCategory !== 'all') {
+                params.append('category', categoryMap[filterCategory]);
+            }
+            if (filterStatus !== 'all') {
+                params.append('status', filterStatus.toLowerCase().replace(' ', ''));
+            }
+            if (params.toString()) {
+                url += `&${params.toString()}`;
+            }
+
+            const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
+
             if (!response.ok) {
+                if (response.status === 401) {
+                    alert('Session expired. Please log in again.');
+                    localStorage.removeItem('token');
+                    return;
+                }
                 throw new Error('Failed to fetch reports');
             }
+
             const data = await response.json();
-            const mappedReports = data.reports.map((report) => ({
+
+            const mappedReports = (data.reports || []).map((report) => ({
                 id: report._id,
-                date: report.createdAt.split('T')[0],
-                reportedUser: report.userIdentification || 'Anonymous',
-                category: reverseCategoryMap[report.reportCategory] || report.reportCategory,
-                status: 'Under Review',
-                description: report.detailedDescription,
+                date: new Date(report.createdAt).toISOString().split('T')[0],
+                reportedUser: report.anonymous ? 'Anonymous Report' : (report.userIdentification || 'Unknown User'),
+                category: displayCategoryMap[report.reportCategory] || report.reportCategory,
+                status: report.status ?
+                    report.status.charAt(0).toUpperCase() + report.status.slice(1) : 'Under Review',
+                description: report.detailedDescription || 'No description provided',
                 evidence: report.supportingEvidence || '',
-                resolutionNotes: '',
-                priority: 'Medium',
+                priority: report.priority || 'Medium',
                 anonymous: report.anonymous,
             }));
+
             setReports(mappedReports);
         } catch (error) {
             console.error('Error fetching reports:', error);
-            alert('Error fetching reports: ' + (error as Error).message);
+            alert('Error loading reports: ' + (error.message));
+            setReports([]);
         } finally {
             setLoading(false);
         }
     };
 
+    // Add dependency array
     useEffect(() => {
-        fetchReports();
-    }); // Refetch when switching tabs if needed
+        if (activeTab === 'view') {
+            fetchReports();
+        }
+    }, [activeTab, filterCategory, filterStatus]);
 
     const handleChange = (e) => {
         setFormData(prev => ({
@@ -144,19 +144,31 @@ const Report = () => {
     const handleCheckboxChange = (checked) => {
         setFormData(prev => ({
             ...prev,
-            anonymous: checked
+            anonymous: checked,
+            reportedUserId: checked ? '' : prev.reportedUserId
         }));
     };
 
     const handleSubmit = async () => {
+        if (formData.anonymous === false && !formData.reportedUserId.trim()) {
+            alert('Please enter user identification or submit anonymously');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('You must be logged in to submit a report');
+                return;
+            }
+
             const submitData = {
                 userType: formData.reportedUserType,
-                userIdentification: formData.anonymous ? undefined : formData.reportedUserId,
-                reportCategory: categoryMap[formData.reportCategory] || formData.reportCategory,
-                detailedDescription: formData.description,
-                supportingEvidence: formData.evidenceUrl,
+                userIdentification: formData.anonymous ? undefined : formData.reportedUserId.trim(),
+                reportCategory: categoryMap[formData.reportCategory],
+                detailedDescription: formData.description.trim(),
+                supportingEvidence: formData.evidenceUrl.trim() || undefined,
                 anonymous: formData.anonymous,
             };
 
@@ -164,17 +176,17 @@ const Report = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(submitData),
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || 'Failed to submit report');
             }
 
-            // Refetch reports after successful submission
-            await fetchReports();
+            alert('Report submitted successfully!');
 
             // Reset form
             setFormData({
@@ -185,50 +197,30 @@ const Report = () => {
                 anonymous: false,
                 evidenceUrl: '',
             });
+
             setActiveTab('view');
-            alert('Report submitted successfully!');
         } catch (error) {
-            alert('Error submitting report: ' + (error as Error).message);
+            alert('Error: ' + error.message);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const getStatusStyles = (status) => {
-        const styles = {
-            'Under Review': 'bg-amber-50 text-amber-700 border-amber-200',
-            'Resolved': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            'Dismissed': 'bg-rose-50 text-rose-700 border-rose-200'
-        };
-        return styles[status] || 'bg-gray-50 text-gray-700 border-gray-200';
-    };
+    // Rest of styling functions remain same...
 
-    const getPriorityStyles = (priority) => {
-        const styles = {
-            'High': 'bg-red-100 text-red-800 border-red-300',
-            'Medium': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-            'Low': 'bg-blue-100 text-blue-800 border-blue-300'
-        };
-        return styles[priority] || 'bg-gray-100 text-gray-800 border-gray-300';
-    };
-
-    const getCategoryIcon = (category) => {
-        const icons = {
-            'Fake Profile': '👤',
-            'Harassment': '🚫',
-            'Spam': '📧',
-            'Inappropriate Behavior': '⚠️',
-            'Fraud': '💰',
-            'Other': '❓'
-        };
-        return icons[category] || '❓';
-    };
 
     const filteredReports = reports.filter(report => {
-        const matchesSearch = report.reportedUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = filterCategory === 'all' || report.category === filterCategory;
+        const matchesSearch =
+            report.reportedUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            report.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCategory = filterCategory === 'all' ||
+            report.category === displayCategoryMap[categoryMap[filterCategory]] ||
+            report.category === filterCategory;
+
         const matchesStatus = filterStatus === 'all' || report.status === filterStatus;
+
         return matchesSearch && matchesCategory && matchesStatus;
     });
 
@@ -245,12 +237,13 @@ const Report = () => {
         dismissed: reports.filter(r => r.status === 'Dismissed').length,
     };
 
+    // Loading state
     if (loading && activeTab === 'view') {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Loading reports...</p>
+                    <Loader2 className="h-10 w-10 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600 text-lg">Loading your reports...</p>
                 </div>
             </div>
         );
@@ -296,7 +289,7 @@ const Report = () => {
                     </div>
                 </div>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+                <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v === 'view') fetchReports(); }} className="space-y-8">
                     <TabsList className="grid w-full max-w-md grid-cols-2 bg-white shadow-lg rounded-xl p-1 h-14 border border-gray-200">
                         <TabsTrigger value="view" className="text-base py-3 px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
                             <Eye className="h-5 w-5 mr-2" />
@@ -343,7 +336,7 @@ const Report = () => {
                                     <div className="border-t border-gray-100 pt-6 space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="space-y-2">
-                                                <Label className="text-sm font-semibold text-gray-700">Category</Label>
+                                                <Label htmlFor='filterCategory' className="text-sm font-semibold text-gray-700">Category</Label>
                                                 <Select value={filterCategory} onValueChange={setFilterCategory}>
                                                     <SelectTrigger className="border-gray-200 rounded-xl h-11">
                                                         <SelectValue />
@@ -363,7 +356,7 @@ const Report = () => {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label className="text-sm font-semibold text-gray-700">Status</Label>
+                                                <Label htmlFor='status' className="text-sm font-semibold text-gray-700">Status</Label>
                                                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                                                     <SelectTrigger className="border-gray-200 rounded-xl h-11">
                                                         <SelectValue />
@@ -380,7 +373,7 @@ const Report = () => {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label className="text-sm font-semibold text-gray-700">Actions</Label>
+                                                <Label htmlFor='actions' className="text-sm font-semibold text-gray-700">Actions</Label>
                                                 <Button
                                                     onClick={clearFilters}
                                                     variant="outline"
@@ -408,7 +401,6 @@ const Report = () => {
                                             <div className="space-y-1">
                                                 <CardTitle className="text-lg font-bold text-gray-900 flex items-center">
                                                     <span className="text-2xl mr-2">{getCategoryIcon(report.category)}</span>
-                                                    Report #{report.id}
                                                 </CardTitle>
                                                 <CardDescription className="text-sm text-gray-600 flex items-center">
                                                     <Clock className="h-4 w-4 mr-1" />

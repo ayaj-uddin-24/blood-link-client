@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import {
@@ -28,8 +29,7 @@ import {
   Zap,
   Shield
 } from 'lucide-react';
-
-const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+import { bloodGroups } from '../data/mockData';
 
 const Donors = () => {
   const [donors, setDonors] = useState([]);

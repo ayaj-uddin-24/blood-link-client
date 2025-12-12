@@ -56,7 +56,6 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      // Map frontend data to backend expectations
       const submitData = {
         fullName: formData.name,
         email: formData.email,
@@ -84,7 +83,7 @@ const Register = () => {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // Store token for auth (e.g., for future API calls)
+      // Store token for auth 
       localStorage.setItem('token', data.token);
 
       toast({
@@ -92,7 +91,7 @@ const Register = () => {
         description: "Welcome to BloodLink! You can now help save lives.",
       });
 
-      // Redirect to home page (adjust path as needed)
+      // Redirect to home page
       navigate('/');
     } catch (error) {
       toast({

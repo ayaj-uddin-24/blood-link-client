@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { MapPin, Phone, Calendar, Hospital } from 'lucide-react';
 import type { BloodRequest } from '@/data/mockData';
-import { urgencyLevels } from '@/data/mockData';
+import { colors, urgencyLevels } from '@/data/mockData';
 
 interface RequestCardProps {
   request: BloodRequest;
@@ -12,16 +12,6 @@ interface RequestCardProps {
 
 const RequestCard = ({ request, onRespond }: RequestCardProps) => {
   const getBloodGroupColor = (bloodGroup: string) => {
-    const colors = {
-      'O+': 'bg-primary text-primary-foreground',
-      'O-': 'bg-destructive text-destructive-foreground',
-      'A+': 'bg-success text-success-foreground',
-      'A-': 'bg-warning text-warning-foreground',
-      'B+': 'bg-blue-600 text-white',
-      'B-': 'bg-purple-600 text-white',
-      'AB+': 'bg-orange-600 text-white',
-      'AB-': 'bg-pink-600 text-white',
-    };
     return colors[bloodGroup as keyof typeof colors] || 'bg-muted text-muted-foreground';
   };
 
