@@ -63,8 +63,8 @@ export default function Chatbot() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const API_KEY = "AIzaSyD1RVsVPfYok47-BTmdMSy8AXjWuTfbyy0";
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+    const API_KEY = import.meta.env.VITE_REACT_APP_API_KEY || "";
+    const API_URL = import.meta.env.VITE_REACT_APP_API_URL + "?key=" + API_KEY || "";
 
     useEffect(() => {
         if (chatBodyRef.current) {
