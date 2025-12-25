@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import BloodRequests from "./pages/BloodRequests";
 import NotFound from "./pages/NotFound";
 import Report from "./pages/Report";
+import Chatbot from "./components/Chatbot/ChatbotIcons";
 
 const queryClient = new QueryClient();
 
@@ -31,9 +32,9 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/report" element={<Report />} />
             <Route path="/requests" element={<BloodRequests />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <Chatbot />
         </div>
       </BrowserRouter>
     </TooltipProvider>

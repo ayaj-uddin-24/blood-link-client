@@ -1,0 +1,14 @@
+@media (max-width: 520px) {
+  .fixed.bottom-24 {
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+  }
+  .fixed.bottom-8.right-9 {
+    right: 1.25rem;
+    bottom: 1.25rem;
+  }
+}
