@@ -193,14 +193,23 @@ export default function Chatbot() {
                 onClick={() => setIsOpen(!isOpen)}
                 className={`fixed bottom-6 right-6 z-50 h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-110 ${isOpen ? 'scale-95 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
                 title="Open chat assistant"
+                type="button"
             >
-                <ChatbotIcon className="h-6 w-6 text-white" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
             </button>
 
             {/* Chatbot Popup */}
             <div
-                className={`fixed right-6 bottom-24 w-full max-w-md bg-white rounded-3xl shadow-2xl transition-all duration-300 z-40 ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'
-                    } origin-bottom-right flex flex-col md:h-[680px] h-screen md:max-h-[680px] border border-gray-100 overflow-hidden`}
+                className={`fixed right-6 w-full max-w-md bg-white rounded-3xl shadow-2xl transition-all duration-300 z-40 ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                    } origin-bottom-right flex flex-col border border-gray-100 overflow-hidden`}
+                style={{
+                    top: isOpen ? '1.5rem' : 'auto',
+                    bottom: isOpen ? 'auto' : '6rem',
+                    maxHeight: isOpen ? 'calc(100vh - 3rem)' : '680px',
+                    height: isOpen ? 'calc(100vh - 3rem)' : '680px'
+                }}
             >
                 {/* Header */}
                 <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 px-6 py-5">
@@ -221,11 +230,12 @@ export default function Chatbot() {
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all duration-200"
+                            className="flex-shrink-0 text-white hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all duration-200 cursor-pointer"
                             title="Close chat"
+                            type="button"
                         >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <svg className="h-6 w-6 text-white" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
