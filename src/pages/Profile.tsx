@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { bloodGroups } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
+import DonationTrendsChart from '@/components/Analytics/DonationTrendsChart';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -625,6 +626,23 @@ const Profile = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Analytics Section */}
+        <div className="mt-12">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Your Donation Impact</h2>
+            <p className="text-muted-foreground">Track your contributions and see how you&apos;re making a difference</p>
+          </div>
+          <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle>Donation Trends</CardTitle>
+              <CardDescription>Your donation history over the past 6 months</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DonationTrendsChart />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

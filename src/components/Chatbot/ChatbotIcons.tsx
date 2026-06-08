@@ -29,18 +29,22 @@ interface ChatHistoryItem {
 }
 
 const ChatbotIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 1024 1024">
-        <path d="M738.3 287.6H285.7c-59 0-106.8 47.8-106.8 106.8v303.1c0 59 47.8 106.8 106.8 106.8h81.5v111.1c0 .7.8 1.1 1.4.7l166.9-110.6 41.8-.8h117.4l43.6-.4c59 0 106.8-47.8 106.8-106.8V394.5c0-59-47.8-106.9-106.8-106.9zM351.7 448.2c0-29.5 23.9-53.5 53.5-53.5s53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5-53.5-23.9-53.5-53.5zm157.9 267.1c-67.8 0-123.8-47.5-132.3-109h264.6c-8.6 61.5-64.5 109-132.3 109zm110-213.7c-29.5 0-53.5-23.9-53.5-53.5s23.9-53.5 53.5-53.5 53.5 23.9 53.5 53.5-23.9 53.5-53.5 53.5zM867.2 644.5V453.1h26.5c19.4 0 35.1 15.7 35.1 35.1v121.1c0 19.4-15.7 35.1-35.1 35.1h-26.5zM95.2 609.4V488.2c0-19.4 15.7-35.1 35.1-35.1h26.5v191.3h-26.5c-19.4 0-35.1-15.7-35.1-35.1zM561.5 149.6c0 23.4-15.6 43.3-36.9 49.7v44.9h-30v-44.9c-21.4-6.5-36.9-26.3-36.9-49.7 0-28.6 23.3-51.9 51.9-51.9s51.9 23.3 51.9 51.9z" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
     </svg>
 );
 
 const ThinkingIndicator = () => (
-    <div className="flex gap-1 py-4">
+    <div className="flex gap-1.5 py-3">
         {[0, 1, 2].map((i) => (
             <div
                 key={i}
-                className="h-2 w-2 bg-rose-400 rounded-full opacity-70 animate-bounce"
-                style={{ animationDelay: `${i * 0.1}s` }}
+                className="h-2.5 w-2.5 bg-gradient-to-b from-red-500 to-rose-500 rounded-full"
+                style={{
+                    animation: `pulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${i * 0.2}s`,
+                    opacity: 0.6 + i * 0.2
+                }}
             />
         ))}
     </div>
@@ -187,73 +191,101 @@ export default function Chatbot() {
             {/* Chatbot Toggler */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-8 right-9 z-50 h-12 w-12 flex items-center justify-center rounded-full bg-rose-500 shadow-lg transition-transform duration-200 hover:scale-110 hover:bg-rose-600 ${isOpen ? 'rotate-90' : ''}`}
+                className={`fixed bottom-6 right-6 z-50 h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-110 ${isOpen ? 'scale-95 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+                title="Open chat assistant"
+                type="button"
             >
-                {isOpen ? (
-                    <span className="text-white text-2xl">×</span>
-                ) : (
-                    <span className="text-white text-xl">💬</span>
-                )}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
             </button>
 
             {/* Chatbot Popup */}
             <div
-                className={`fixed right-9 bottom-24 w-full max-w-md bg-white rounded-2xl shadow-2xl transition-all duration-100 z-40 ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-0 pointer-events-none'
-                    } origin-bottom-right flex flex-col md:h-[600px] h-screen md:max-h-[600px]`}
+                className={`fixed right-6 w-full max-w-md bg-white rounded-3xl shadow-2xl transition-all duration-300 z-40 ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                    } origin-bottom-right flex flex-col border border-gray-100 overflow-hidden`}
+                style={{
+                    top: isOpen ? '1.5rem' : 'auto',
+                    bottom: isOpen ? 'auto' : '6rem',
+                    maxHeight: isOpen ? 'calc(100vh - 3rem)' : '680px',
+                    height: isOpen ? 'calc(100vh - 3rem)' : '680px'
+                }}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-rose-500 rounded-t-2xl">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-white rounded-full p-1.5 flex-shrink-0">
-                            <ChatbotIcon />
-                        </div>
-                        <h2 className="text-white font-semibold text-xl">Chatbot</h2>
+                <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 px-6 py-5">
+                    {/* Decorative background elements */}
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-2 right-8 w-16 h-16 bg-white rounded-full blur-2xl"></div>
                     </div>
-                    <button
-                        onClick={() => setIsOpen(false)}
-                        className="text-white hover:bg-rose-600 rounded-full p-2 transition-colors"
-                    >
-                        <span className="text-2xl leading-none">⌄</span>
-                    </button>
+                    
+                    <div className="relative flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-white/20 rounded-xl p-2 flex-shrink-0 backdrop-blur-sm">
+                                <ChatbotIcon className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="flex flex-col">
+                                <h2 className="text-white font-bold text-lg">BloodLink Assistant</h2>
+                                <p className="text-red-50 text-xs font-medium">Always here to help</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="flex-shrink-0 text-white hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all duration-200 cursor-pointer"
+                            title="Close chat"
+                            type="button"
+                        >
+                            <svg className="h-6 w-6 text-white" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Chat Body */}
                 <div
                     ref={chatBodyRef}
-                    className="flex-1 overflow-y-auto px-6 py-6 space-y-5"
-                    style={{ scrollbarWidth: 'thin', scrollbarColor: '#fecdd3 transparent' }}
+                    className="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-gradient-to-b from-gray-50 to-white"
+                    style={{ scrollbarWidth: 'thin', scrollbarColor: '#e5e7eb transparent' }}
                 >
                     {messages.map((message, index) => (
                         <div
                             key={index}
-                            className={`flex gap-3 ${message.type === 'user' ? 'flex-col items-end' : 'items-start'}`}
+                            className={`flex gap-3 animate-fade-in ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+                            style={{
+                                animation: 'fadeInUp 0.4s ease-out',
+                                animationDelay: `${index * 0.1}s`
+                            }}
                         >
                             {message.type === 'bot' && (
-                                <div className="w-9 h-9 bg-rose-500 rounded-full p-1.5 flex-shrink-0 self-end fill-white">
-                                    <ChatbotIcon />
+                                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg p-1.5 flex-shrink-0 flex items-center justify-center shadow-sm">
+                                    <ChatbotIcon className="h-5 w-5 text-white" />
                                 </div>
                             )}
-                            <div className={`max-w-[75%] ${message.type === 'user' ? 'order-1' : ''}`}>
+                            <div className={`flex flex-col max-w-[75%] gap-2`}>
                                 {message.thinking ? (
-                                    <div className="bg-rose-50 rounded-2xl px-4">
+                                    <div className="bg-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
                                         <ThinkingIndicator />
                                     </div>
                                 ) : (
-                                    <div
-                                        className={`px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${message.type === 'bot'
-                                            ? `bg-rose-50 rounded-tl-sm ${message.isError ? 'text-red-600' : ''}`
-                                            : 'bg-rose-500 text-white rounded-br-sm'
-                                            }`}
-                                    >
-                                        {message.text}
-                                    </div>
-                                )}
-                                {message.image && (
-                                    <img
-                                        src={message.image}
-                                        alt="Attachment"
-                                        className="w-1/2 mt-2 rounded-2xl rounded-tr-sm"
-                                    />
+                                    <>
+                                        <div
+                                            className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm transition-all ${message.type === 'bot'
+                                                ? `bg-gray-100 text-gray-900 rounded-tl-none ${message.isError ? 'bg-red-50 text-red-700 border border-red-200' : ''}`
+                                                : 'bg-gradient-to-br from-red-600 to-rose-600 text-white rounded-br-none'
+                                                }`}
+                                        >
+                                            {message.text}
+                                        </div>
+                                        {message.image && (
+                                            <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                <img
+                                                    src={message.image}
+                                                    alt="Attachment"
+                                                    className="max-w-[200px] max-h-[200px] rounded-2xl rounded-tl-none shadow-md object-cover"
+                                                />
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -261,67 +293,79 @@ export default function Chatbot() {
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-white rounded-b-2xl border-t">
-                    <div className="relative bg-white rounded-full border border-rose-200 shadow-sm focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-500 transition-all">
+                <div className="px-6 py-5 bg-white border-t border-gray-100 rounded-b-3xl space-y-4">
+                    {/* File Preview */}
+                    {selectedFile && (
+                        <div className="relative inline-flex rounded-xl overflow-hidden border-2 border-red-200 bg-red-50">
+                            <img
+                                src={selectedFile.preview}
+                                alt="Preview"
+                                className="h-16 w-16 object-cover"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setSelectedFile(null)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center hover:bg-red-600 transition-colors shadow-md"
+                                title="Remove attachment"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
+                    
+                    {/* Input Area */}
+                    <div className="relative bg-gray-50 rounded-2xl border border-gray-200 shadow-sm hover:border-gray-300 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-500/20 focus-within:shadow-md transition-all">
                         <textarea
                             ref={textareaRef}
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Message..."
+                            placeholder="Type your message here..."
                             rows={1}
-                            className="w-full px-5 py-3 pr-28 outline-none resize-none max-h-44 text-sm rounded-full"
+                            className="w-full px-5 py-3 pr-24 outline-none resize-none max-h-32 text-sm rounded-2xl bg-transparent text-gray-900 placeholder-gray-500"
                             style={{ scrollbarWidth: 'thin' }}
                         />
 
-                        <div className="absolute right-2 bottom-2 flex items-center gap-1">
+                        <div className="absolute right-2 bottom-2 flex items-center gap-2">
                             {/* File Upload */}
-                            <div className="relative h-9 w-9">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                />
-                                {selectedFile ? (
-                                    <>
-                                        <img
-                                            src={selectedFile.preview}
-                                            alt="Preview"
-                                            className="absolute inset-0 h-full w-full object-cover rounded-full"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setSelectedFile(null)}
-                                            className="absolute inset-0 bg-white rounded-full text-red-600 hover:bg-red-50 transition-colors opacity-0 hover:opacity-100 flex items-center justify-center text-2xl"
-                                        >
-                                            ×
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="h-9 w-9 rounded-full text-rose-600 hover:bg-rose-50 transition-colors flex items-center justify-center text-lg"
-                                    >
-                                        📎
-                                    </button>
-                                )}
-                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isThinking}
+                                className="h-9 w-9 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all flex items-center justify-center text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Attach image"
+                            >
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                            </button>
 
                             {/* Send Button */}
-                            {(inputValue.trim() || selectedFile) && (
-                                <button
-                                    type="button"
-                                    onClick={handleSendMessage}
-                                    className="h-9 w-9 rounded-full bg-rose-500 text-white hover:bg-rose-600 transition-colors flex items-center justify-center text-lg font-bold"
-                                >
-                                    ↑
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                onClick={handleSendMessage}
+                                disabled={!inputValue.trim() && !selectedFile || isThinking}
+                                className="h-9 w-9 rounded-lg bg-gradient-to-br from-red-600 to-rose-600 text-white hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center"
+                                title="Send message"
+                            >
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
+                    
+                    {/* Helper text */}
+                    <p className="text-xs text-gray-500 text-center">Press Enter to send, Shift+Enter for new line</p>
                 </div>
             </div>
         </>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, X, User, Users, FileText, Home, LogOut } from 'lucide-react';
+import { Heart, Menu, X, User, Users, FileText, Home, LogOut, BarChart3 } from 'lucide-react';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,7 +19,10 @@ const Navbar = () => {
 
   const navItems = [
     ...commonNavItems,
-    ...(isLoggedIn ? [{ href: '/profile', label: 'Profile', icon: User }] : []),
+    ...(isLoggedIn ? [
+      { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+      { href: '/profile', label: 'Profile', icon: User }
+    ] : []),
   ];
 
   const isActive = (path: string) => location.pathname === path;

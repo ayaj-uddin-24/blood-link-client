@@ -34,6 +34,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { categoryMap, displayCategoryMap, getCategoryIcon, getPriorityStyles, getStatusStyles, reportCategories, statuses } from '../data/mockData';
+import RequestTrendsChart from '@/components/Analytics/RequestTrendsChart';
 
 const Report = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -630,6 +631,23 @@ const Report = () => {
                         </Card>
                     </TabsContent>
                 </Tabs>
+
+                {/* Analytics Section */}
+                <div className="mt-12">
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Report Analytics</h2>
+                        <p className="text-gray-600">Resolution trends and response time metrics</p>
+                    </div>
+                    <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow bg-white">
+                        <CardHeader>
+                            <CardTitle>Resolution Trends</CardTitle>
+                            <CardDescription>Community safety report processing over time</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <RequestTrendsChart />
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );
