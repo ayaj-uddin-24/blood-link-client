@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: "sb-18dc2ka8donr.vercel.run",
   },
   resolve: {
     alias: {
