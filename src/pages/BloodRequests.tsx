@@ -31,6 +31,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { bloodGroups, urgencyLevels } from '../data/mockData';
+import RequestTrendsChart from '@/components/Analytics/RequestTrendsChart';
+import BloodTypeChart from '@/components/Analytics/BloodTypeChart';
 
 const BloodRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -438,6 +440,34 @@ const BloodRequests = () => {
                 <div className="text-xs text-gray-600">Fulfilled</div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics Section */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Analytics</h2>
+            <p className="text-gray-600">Request fulfillment and blood type demand patterns</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Fulfillment Rate Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RequestTrendsChart />
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Blood Type Demand</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BloodTypeChart />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

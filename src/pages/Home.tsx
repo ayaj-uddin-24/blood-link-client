@@ -20,6 +20,7 @@ import {
   Star
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import DonationTrendsChart from '@/components/Analytics/DonationTrendsChart';
 
 const stats = [
   { icon: Users, label: 'Active Donors', value: '50K+' },
@@ -320,6 +321,80 @@ const Home = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Analytics Section */}
+      <section className="py-24 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-blue-100 rounded-full px-4 py-2 mb-4">
+              <TrendingUp className="h-4 w-4 text-red-600" />
+              <span className="text-red-600 text-sm font-semibold">Analytics</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Community Impact Trends
+            </h2>
+            <p className="text-xl text-gray-600">
+              See how our community is growing and making a difference
+            </p>
+          </div>
+
+          <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-8">
+              <DonationTrendsChart />
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-red-500 to-rose-600 p-3 rounded-lg">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    +18.5%
+                  </span>
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium mb-2">Monthly Donations</h3>
+                <p className="text-2xl font-bold text-foreground">4,847 units</p>
+                <p className="text-sm text-gray-500 mt-2">Compared to last month</p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-3 rounded-lg">
+                    <Heart className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    +22.3%
+                  </span>
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium mb-2">Lives Saved</h3>
+                <p className="text-2xl font-bold text-foreground">1,243 this month</p>
+                <p className="text-sm text-gray-500 mt-2">Thanks to our donors</p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-pink-500 to-red-600 p-3 rounded-lg">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    +12.5%
+                  </span>
+                </div>
+                <h3 className="text-gray-600 text-sm font-medium mb-2">New Donors</h3>
+                <p className="text-2xl font-bold text-foreground">3,421 new</p>
+                <p className="text-sm text-gray-500 mt-2">Joined this quarter</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

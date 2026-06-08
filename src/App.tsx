@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import BloodRequests from "./pages/BloodRequests";
 import NotFound from "./pages/NotFound";
 import Report from "./pages/Report";
+import Dashboard from "./pages/Dashboard";
 import Chatbot from "./components/Chatbot/ChatbotIcons";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/report" element={<Report />} />
             <Route path="/requests" element={<BloodRequests />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Chatbot />

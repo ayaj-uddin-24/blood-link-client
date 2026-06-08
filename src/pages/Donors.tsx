@@ -30,6 +30,8 @@ import {
   Shield
 } from 'lucide-react';
 import { bloodGroups } from '../data/mockData';
+import DonorDemographicsChart from '@/components/Analytics/DonorDemographicsChart';
+import BloodTypeChart from '@/components/Analytics/BloodTypeChart';
 
 const Donors = () => {
   const [donors, setDonors] = useState([]);
@@ -312,6 +314,34 @@ const Donors = () => {
                 <div className="text-xs text-gray-500">Results</div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics Section */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Donor Insights</h2>
+            <p className="text-gray-600">Understanding our donor community</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Donor Demographics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DonorDemographicsChart />
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle>Blood Type Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BloodTypeChart />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
